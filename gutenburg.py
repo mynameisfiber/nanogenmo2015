@@ -36,7 +36,6 @@ class Book(object):
     def _parse_meta(self):
         title_node = self.dom.xpath("/html/head/title")[0]
         title = clean_string(title_node.text_content())
-        print(title)
         # Parse titles of the form "The Project Gutenberg eBook of Brigands of
         # the Moon, by Ray Cummings".  This is done by first eliminating words
         # starting with upper case, then words starting with lowercase, then
@@ -126,16 +125,17 @@ class Book(object):
         return '<gutenburg.book, "{title}" by {author}>'.format(**self.meta)
 
 class Bookshelf(object):
-    def __init__(self, location):
-        self.location = location
+    def __init__(self, locations):
+        self.locations = locations
         self.books = self._find_books()
 
     def _find_books(self):
         books = []
-        for dirpath, dirnames, filenames in os.walk(self.location):
-            for filename in filenames:
-                if ".htm" in filename.lower():
-                    books.append(os.path.join(self.location, dirpath, filename))
+        for location in self.locations:
+            for dirpath, dirnames, filenames in os.walk(location):
+                for filename in filenames:
+                    if ".htm" in filename.lower():
+                        books.append(os.path.join(location, dirpath, filename))
         return books
                     
     def __iter__(self):
