@@ -134,7 +134,7 @@ class Bookshelf(object):
         books = []
         for dirpath, dirnames, filenames in os.walk(self.location):
             for filename in filenames:
-                if filename.lower().endswith(".htm"):
+                if ".htm" in filename.lower():
                     books.append(os.path.join(self.location, dirpath, filename))
         return books
                     
