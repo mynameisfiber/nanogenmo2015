@@ -3,6 +3,34 @@ Read in an HTM file from project Gutenburg and parse the contents.  This is
 done by first extracting out chapters and their respective contents and then
 scoring each section.  This'll allow us to get rid of some of the Gutenburg
 fluf.
+
+>> bookshelf = gutenburg.Bookshelf(("/data/gutenburg/pgsfcd-032007/", "/data/gutenburg/pgdvd072006"))
+>> for book in bookshelf:
+.....:     print(book)
+.....:  
+<gutenburg.book, "The Gods of Mars" by Edgar Rice Burroughs (23 sections)>
+<gutenburg.book, "At the Earth's Core" by Edgar Rice Burroughs (16 sections)>
+<gutenburg.book, "Five Thousand Miles Underground" by None (29 sections)>
+<gutenburg.book, "Down and Out in the Magic Kingdom" by None (15 sections)>
+<gutenburg.book, ""Pellucidar"" by Edgar Rice Burroughs. (16 sections)>
+<gutenburg.book, "Plague Ship" by Andre Norton. (18 sections)>
+<gutenburg.book, "Rip Foster in Ride the Gray Planet" by Harold Leland Goodwin (21 sections)>
+<gutenburg.book, "20000 Lieues sous les mers Parts 1&2" by Jules (101 sections)>
+...etc...
+>> book.meta
+{'author': 'Edgar Rice Burroughs.', 'title': '"Thuvia, Maid of Mars"'}
+
+>> book.chapters[0]
+{
+    'title': 'CHAPTER I: CARTHORIS AND THUVIA'
+    'header': [<Element h2 at 0x7f74c352c3b8>, <Element h3 at 0x7f74c352c728>],
+    'content': [
+        'Upon a massive bench of polished ersite ...',
+        '"Ah, Thuvia of Ptarth," he cried, "you ...',
+        ...
+    ],
+    'score': 217.50537634408602,
+}
 """
 
 from lxml import html
@@ -122,7 +150,7 @@ class Book(object):
         return len(self.chapters)
 
     def __repr__(self):
-        return '<gutenburg.book, "{title}" by {author}>'.format(**self.meta)
+        return '<gutenburg.book, "{title}" by {author} ({0} sections)>'.format(len(self), **self.meta)
 
 class Bookshelf(object):
     def __init__(self, locations):
