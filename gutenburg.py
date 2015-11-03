@@ -19,7 +19,8 @@ fluf.
 ...etc...
 >> book.meta
 {'author': 'Edgar Rice Burroughs.', 'title': '"Thuvia, Maid of Mars"'}
-
+>> print(len(book))
+14
 >> book.chapters[0]
 {
     'title': 'CHAPTER I: CARTHORIS AND THUVIA'
