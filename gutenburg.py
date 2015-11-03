@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 
 _HEADINGS = ["h{}".format(i) for i in range(1, 10)]
-_DELINIATIONS = ["hr", ] + _HEADINGS
+_DELINIATIONS = set(_HEADINGS)
 
 
 def clean_string(content):
@@ -70,9 +70,9 @@ class Book(object):
         headers = self.dom.xpath(".//*[" + " or ".join("self::"+h for h in _HEADINGS) + "]")
         header_queue = OrderedDict()
         for header in headers:
+            header_type = int(header.tag[-1])
             if header.getparent().tag.lower() not in ("body", "div"):
                 header = header.getparent()
-            header_type = int(header.tag[-1])
             header_queue[header_type] = header
             content = self._parse_header(header)
             score = self._score_content(content)
@@ -84,7 +84,9 @@ class Book(object):
                     "score" : score,
                     "content" : [clean_string(node.text_content()) for node in content],
                 })
-        similar_headers = reduce(lambda a,b : a&b, (set(c['header']) for c in chapters))
+        similar_headers = set()
+        if len(chapters) > 1:
+            similar_headers = reduce(lambda a,b : a&b, (set(c['header']) for c in chapters))
         for chapter in chapters:
             chapter['header'] = [h for h in chapter['header'] if h not in similar_headers]
             chapter['title'] = ": ".join(clean_string(h.text_content()) for h in chapter['header'])
