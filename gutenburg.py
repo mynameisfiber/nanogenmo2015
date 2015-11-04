@@ -58,11 +58,27 @@ class Book(object):
     """
     def __init__(self, filename):
         self.filename = filename
-        self.dom = html.fromstring(open(filename, 'rb').read())
-        self.chapters = self._parse_chapters()
+        self.html = open(filename, 'rb').read()
+        self.dom = html.fromstring(self.html)
         self.meta = self._parse_meta()
+        self._clean_dom()
+        self.chapters = self._parse_chapters()
+
+    def _clean_dom(self):
+        # remove the license
+        for license in self.dom.xpath(".//pre"):
+            license.getparent().remove(license)
+        for license in self.dom.xpath(".//*[contains(text(), 'Project Gutenberg')]"):
+            license.getparent().remove(license)
+        # remove page labels
+        for page in self.dom.xpath(".//span[@class='pagenum']"):
+            page.getparent().remove(page)
+        # remove comments
+        for comment in self.dom.xpath(".//comment()"):
+            comment.getparent().remove(comment)
 
     def _parse_meta(self):
+        meta = {}
         title_node = self.dom.xpath("/html/head/title")[0]
         title = clean_string(title_node.text_content())
         # Parse titles of the form "The Project Gutenberg eBook of Brigands of
@@ -74,25 +90,26 @@ class Book(object):
             title
         )
         if match is not None:
-            return match.groupdict()
+            meta.update(match.groupdict())
         else:
-            return {"title" : None, "author" : None}
+            meta.update({"title" : None, "author" : None})
+        language = re.search(rb"Language:[\s]*(?P<language>\w*)\b", self.html)
+        if language is not None:
+            meta['language'] = language.groupdict()['language'].lower().strip()
+        else:
+            meta['language'] = None
+        release_date = re.search(rb"Release Date:[\s]*(?P<date>[^[]*)\b", self.html) 
+        if release_date is not None:
+            meta['date'] = release_date.groupdict()['date'].strip()
+        else:
+            meta['date'] = None
+        return meta
 
     def _parse_chapters(self):
         """
         This function should get all the metadata we need from a given dom
-        structure.  Right now all we do is get rid of the license and then find
-        chapters
+        structure. 
         """
-        # remove the license
-        for license in self.dom.xpath(".//pre"):
-            license.getparent().remove(license)
-        # remove page labels
-        for page in self.dom.xpath(".//span[@class='pagenum']"):
-            page.getparent().remove(page)
-        # remove comments
-        for comment in self.dom.xpath(".//comment()"):
-            comment.getparent().remove(comment)
         # find headers and parse their contents
         chapters = []
         headers = self.dom.xpath(".//*[" + " or ".join("self::"+h for h in _HEADINGS) + "]")
