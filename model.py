@@ -107,7 +107,7 @@ gc.collect()
 
 hidden_size = 1536
 dropout = 0.3
-num_layers = 3
+num_layers = 4
 
 model = Sequential()
 model.add(LSTM(hidden_size, return_sequences=True, input_shape=(maxlen, len(chars))))
@@ -159,7 +159,7 @@ def sample_model(model, char_indices, indices_char, seed_text, diversities=(0.2,
 # train the model, output generated text after each iteration
 gc.collect()
 batch_size = 128
-samples_frac = 0.1
+samples_frac = 0.05
 train_num_samples = int(samples_frac * len(train_sentences))
 valid_num_samples = int(samples_frac * len(valid_sentences))
 X = np.zeros((batch_size, maxlen, len(chars)), dtype=np.bool)
