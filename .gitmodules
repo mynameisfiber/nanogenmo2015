@@ -1,0 +1,3 @@
+[submodule "skipthoughts"]
+	path = skipthoughts
+	url = git@github.com:fastforwardlabs/skip-thoughts.git
