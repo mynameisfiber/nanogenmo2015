@@ -133,15 +133,18 @@ def sample_model(model, char_indices, indices_char, seed_text, diversities=(0.2,
     return result
 
 
-def sample_model2(model, seed_text, diversities=(0.2, 0.5, 1.0, 1.2)):
+def sample_model2(model, seed_text, memory=256, diversities=(0.2, 0.5, 1.0, 1.2)):
     result = {d: [seed_text, 1] for d in diversities}
-    x = np.zeros((len(diversities), maxlen, len(chars)))
+    num_iter = 0
+    memory = max(len(seed_text), memory)
+    x = np.zeros((len(diversities), memory, len(chars)))
     while True:
         x.fill(0)
+        offset = min(len(seed_text) + num_iter, memory)
         for i, d in enumerate(diversities):
-            for t, char in enumerate(result[d][0][-maxlen:]):
+            for t, char in enumerate(result[d][0][-offset:]):
                 x[i, t, char_indices[char]] = 1.
-        predictions = model.predict(x, verbose=0)
+        predictions = model.predict(x[:, :offset], verbose=0)
         for diversity, prediction in zip(diversities, predictions):
             next_index = sample(prediction, diversity)
             next_char = indices_char[next_index]
@@ -149,6 +152,8 @@ def sample_model2(model, seed_text, diversities=(0.2, 0.5, 1.0, 1.2)):
             result[diversity][0] += next_char
             result[diversity][1] *= prediction[next_index]
         yield result
+        num_iter += 1
+
 
 
 if __name__ == "__main__":
